@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Recorder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Audio Recorder</h1>
+  <button id="start">Start Recording</button>
+  <button id="stop" disabled>Stop Recording</button>
+  <audio id="audioPlayback" controls></audio>
+
+  <script>
+    const startButton = document.getElementById("start");
+const stopButton = document.getElementById("stop");
+const audioPlayback = document.getElementById("audioPlayback");
+
+let mediaRecorder;
+let audioChunks = [];
+
+// Request microphone access and initialize recorder
+navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+  mediaRecorder = new MediaRecorder(stream);
+
+  // Collect audio data
+  mediaRecorder.ondataavailable = (event) => {
+    audioChunks.push(event.data);
+  };
+
+  // Handle recording stop
+  mediaRecorder.onstop = () => {
+    const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+    const audioURL = URL.createObjectURL(audioBlob);
+    audioPlayback.src = audioURL;
+
+    // Clear the audio chunks for future recordings
+    audioChunks = [];
+  };
+});
+
+// Start recording
+startButton.addEventListener("click", () => {
+  mediaRecorder.start();
+  startButton.disabled = true;
+  stopButton.disabled = false;
+  console.log("Recording started...");
+});
+
+// Stop recording
+stopButton.addEventListener("click", () => {
+  mediaRecorder.stop();
+  startButton.disabled = false;
+  stopButton.disabled = true;
+  console.log("Recording stopped.");
+});
+
+  </script>
+</body>
+</html>
